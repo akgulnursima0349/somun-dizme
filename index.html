@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Somun Sıralama</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Giriş Ekranı ── -->
+  <div id="intro-overlay">
+    <div id="intro-bg"></div>
+    <div class="intro-content">
+      <div class="intro-icon">🔩</div>
+      <h1 class="intro-title">SOMUN SIRALAMA</h1>
+      <div class="intro-nuts-row">
+        <div class="intro-nut nut-red">   <img src="images/somon.png" alt="" draggable="false"></div>
+        <div class="intro-nut nut-blue">  <img src="images/somon.png" alt="" draggable="false"></div>
+        <div class="intro-nut nut-green"> <img src="images/somon.png" alt="" draggable="false"></div>
+        <div class="intro-nut nut-yellow"><img src="images/somon.png" alt="" draggable="false"></div>
+        <div class="intro-nut nut-cyan">  <img src="images/somon.png" alt="" draggable="false"></div>
+        <div class="intro-nut nut-purple"><img src="images/somon.png" alt="" draggable="false"></div>
+      </div>
+      <p class="intro-sub">Somunları renklerine göre sırala!</p>
+      <button id="play-btn">▶&nbsp; OYNA</button>
+    </div>
+  </div>
+
+  <!-- ── Şehir Ekranı ── -->
+  <div id="city-overlay" class="hidden">
+    <div class="city-topbar">
+      <button class="city-nav-btn" id="city-prev">&#9664;</button>
+      <div class="city-title-block">
+        <h2 class="city-name" id="city-name">İSTANBUL</h2>
+        <div class="city-dots" id="city-dots"></div>
+      </div>
+      <div class="city-topbar-right">
+        <button id="bgm-btn" class="mute-btn" title="Müzik aç/kapat">🎵</button>
+        <button class="city-nav-btn" id="city-next">&#9654;</button>
+      </div>
+    </div>
+
+    <div class="city-coins-bar">
+      <span class="coin-emoji">🪙</span>
+      <span id="city-coins-display">0</span>
+      <span class="coin-label">puan</span>
+    </div>
+
+    <div class="city-scene">
+      <div class="city-island" id="city-island"></div>
+    </div>
+
+    <div class="city-footer">
+      <p class="city-progress-text" id="city-progress-text">0 / 5 bina açıldı</p>
+      <div class="city-actions">
+        <button id="unlock-btn" class="unlock-btn">🔓 YÜKLE <span id="unlock-cost-span">20 🪙</span></button>
+        <button id="city-play-btn" class="city-play-btn">▶ OYNA</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app" style="display:none">
+
+    <header class="ui-bar">
+      <button id="home-btn" class="home-btn" title="Şehir Haritası">🏠</button>
+      <div class="ui-bar-stats">
+        <div class="ui-item">
+          <span class="label">SEVİYE</span>
+          <span id="level-display" class="value">1</span>
+        </div>
+        <div class="ui-item">
+          <span class="label">HAMLE</span>
+          <span id="moves-display" class="value">0</span>
+        </div>
+        <div class="ui-item">
+          <span class="label">PUAN</span>
+          <span id="score-display" class="value">0</span>
+        </div>
+      </div>
+      <div class="ui-btn-group">
+        <button id="sfx-btn" class="mute-btn" title="Sesler aç/kapat">🔊</button>
+        <button id="undo-btn" disabled title="Geri Al">↩</button>
+        <button id="restart-btn">↺</button>
+      </div>
+    </header>
+
+    <main id="game-area">
+      <div id="pegs-container"></div>
+    </main>
+
+    <div id="win-overlay" class="hidden">
+      <div class="win-modal">
+        <div class="win-icon">🎉</div>
+        <h2>Tebrikler!</h2>
+        <p id="win-message"></p>
+        <button id="next-btn">Sonraki Seviye →</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
