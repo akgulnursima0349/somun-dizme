@@ -400,6 +400,21 @@ function showWin() {
   SFX.play('win');
 }
 
+// ── Ekran boyutuna göre peg/nut boyutları ───────────────────
+// CSS media query'leriyle birebir eşleşen değerler.
+// Floating nut konumu bu değerlere göre JS tarafından hesaplanır.
+function getPegDimensions() {
+  const W = window.innerWidth;
+  const isLandscapeMobile =
+    window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+
+  if (isLandscapeMobile) return { PEG_H: 195, NUT_H: 27, NUT_EFF: 21, NUTS_BOT:  9, FLOAT_TOP: 10 };
+  if (W <= 380)          return { PEG_H: 250, NUT_H: 31, NUT_EFF: 24, NUTS_BOT: 10, FLOAT_TOP: 12 };
+  if (W <= 600)          return { PEG_H: 280, NUT_H: 36, NUT_EFF: 29, NUTS_BOT: 12, FLOAT_TOP: 15 };
+  if (W <= 1024)         return { PEG_H: 310, NUT_H: 42, NUT_EFF: 24, NUTS_BOT: 14, FLOAT_TOP: 20 };
+  return                        { PEG_H: 380, NUT_H: 54, NUT_EFF: 26, NUTS_BOT: 18, FLOAT_TOP: 25 };
+}
+
 // ── Render ──────────────────────────────────────────────────
 function render() {
   document.getElementById('level-display').textContent = state.level;
@@ -432,12 +447,7 @@ function buildPegEl(peg, idx) {
   // Floating hesabı: sadece en üstteki tek somun havaya kalkar
   let floatDy = 0;
   if (pegIsSelected && peg.length > 0) {
-    const mobile    = window.innerWidth <= 600;
-    const PEG_H     = mobile ? 280 : 380;
-    const NUT_H     = mobile ? 36  : 54;
-    const NUT_EFF   = NUT_H - (mobile ? 7 : 28);
-    const NUTS_BOT  = mobile ? 12  : 18;
-    const FLOAT_TOP = mobile ? 15  : 25;
+    const { PEG_H, NUT_H, NUT_EFF, NUTS_BOT, FLOAT_TOP } = getPegDimensions();
     const curBottom = NUTS_BOT + (peg.length - 1) * NUT_EFF;
     const tgtBottom = PEG_H - FLOAT_TOP - NUT_H;
     floatDy = tgtBottom - curBottom;

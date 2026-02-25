@@ -162,6 +162,7 @@ body {
   cursor: pointer;
   transition: filter 0.2s;
   flex-shrink: 0;
+  touch-action: manipulation;
 }
 
 .peg:hover {
@@ -1025,4 +1026,99 @@ body {
   .intro-nuts-row { gap: 8px; margin-bottom: 18px; }
   #play-btn     { font-size: 18px; padding: 14px 44px; letter-spacing: 4px; }
   .intro-sub    { font-size: 14px; margin-bottom: 24px; }
+}
+
+/* ============================
+   TABLET (601px – 1024px)
+   ============================ */
+@media (max-width: 1024px) and (min-width: 601px) {
+  /* UI bar */
+  .ui-bar        { padding: 10px 18px; }
+  .ui-bar-stats  { gap: 18px; }
+  .ui-item       { min-width: 58px; }
+  .ui-item .value { font-size: 24px; }
+
+  /* Peg */
+  .peg           { width: 110px; height: 310px; }
+  .peg-pole      { height: 175px; background-size: 175px auto; }
+  .peg-nuts      { bottom: 14px; }
+  .nut           { width: 82px; height: 42px; margin: -18px 0 0; }
+  .peg-cap       { bottom: 116px; width: 90px; }
+  #pegs-container { gap: 10px; align-content: flex-end; }
+  #game-area     { padding: 20px 16px 24px; }
+
+  .mystery-mark  { font-size: 20px; }
+
+  /* Şehir */
+  .city-island       { height: 175px; }
+  .city-building img { height: 280px; max-width: 145px; }
+  .city-building     { bottom: -20px; }
+
+  /* Giriş */
+  .intro-title { font-size: 44px; }
+  .intro-icon  { font-size: 68px; }
+  .intro-nut   { width: 58px; height: 58px; }
+}
+
+/* ============================
+   KÜÇÜK TELEFON (≤380px)
+   ============================ */
+@media (max-width: 380px) {
+  .peg           { width: 76px; height: 250px; }
+  .peg-pole      { height: 122px; background-size: 122px auto; }
+  .peg-nuts      { bottom: 10px; }
+  .nut           { width: 56px; height: 31px; margin: -7px 0 0; }
+  .peg-cap       { bottom: 84px; width: 60px; }
+  #pegs-container { gap: 5px; }
+  .mystery-mark  { font-size: 15px; }
+  .intro-title   { font-size: 26px; letter-spacing: 2px; }
+  .intro-nut     { width: 38px; height: 38px; }
+  #play-btn      { font-size: 16px; padding: 13px 38px; }
+}
+
+/* ============================
+   MOBİL YATAY
+   (orientation: landscape + max-height: 500px)
+   PC / tablet landscape bu bloğa GİRMEZ (height > 500px)
+   ============================ */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* UI bar – çok kompakt */
+  .ui-bar        { padding: 5px 14px; }
+  .ui-bar-stats  { gap: 12px; }
+  .ui-item       { min-width: 46px; }
+  .ui-item .value { font-size: 20px; }
+  .ui-item .label { font-size: 9px; letter-spacing: 1.5px; }
+  .home-btn      { width: 36px; height: 30px; font-size: 15px; }
+  #restart-btn, #undo-btn { padding: 5px 10px; font-size: 14px; }
+
+  /* Peg */
+  .peg           { width: 68px; height: 195px; }
+  .peg-pole      { height: 108px; background-size: 108px auto; }
+  .peg-nuts      { bottom: 9px; }
+  .nut           { width: 50px; height: 27px; margin: -6px 0 0; }
+  .peg-cap       { bottom: 72px; width: 54px; }
+  #pegs-container { gap: 5px; }
+  #game-area     { padding: 8px 12px 10px; }
+
+  .mystery-mark  { font-size: 13px; }
+
+  /* Şehir */
+  .city-topbar   { padding: 8px 18px 4px; }
+  .city-name     { font-size: 18px; letter-spacing: 3px; margin-bottom: 4px; }
+  .city-coins-bar { margin: 2px 0 6px; padding: 4px 14px; }
+  #city-coins-display { font-size: 18px; }
+  .coin-emoji    { font-size: 16px; }
+  .city-island   { height: 100px; }
+  .city-building img { height: 120px; max-width: 80px; }
+  .city-building { bottom: -10px; }
+  .city-footer   { padding: 6px 16px 10px; gap: 7px; }
+  .unlock-btn, .city-play-btn { font-size: 12px; padding: 8px 14px; }
+
+  /* Giriş */
+  .intro-icon    { font-size: 38px; margin-bottom: 4px; }
+  .intro-title   { font-size: 22px; letter-spacing: 2px; margin-bottom: 8px; }
+  .intro-nuts-row { gap: 8px; margin-bottom: 10px; }
+  .intro-nut     { width: 32px; height: 32px; }
+  .intro-sub     { font-size: 12px; margin-bottom: 12px; }
+  #play-btn      { font-size: 14px; padding: 10px 30px; letter-spacing: 3px; }
 }
