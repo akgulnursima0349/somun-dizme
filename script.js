@@ -52,7 +52,7 @@ const BGM = (() => {
 
   return {
     play() {
-      if (muted) return;
+      if (muted || !audio.paused) return;
       audio.play().catch(() => {});
     },
     pause()      { audio.pause(); },
@@ -63,7 +63,7 @@ const BGM = (() => {
       muted = !muted;
       localStorage.setItem('somun-bgm-muted', muted ? '1' : '0');
       if (muted) audio.pause();
-      else audio.play().catch(() => {});
+      else if (audio.paused) audio.play().catch(() => {});
       return muted;
     },
     isMuted() { return muted; },
