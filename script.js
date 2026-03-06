@@ -71,7 +71,22 @@ const BGM = (() => {
 })();
 
 // ── Sabitler ────────────────────────────────────────────────
-const COLORS = ['red', 'blue', 'green', 'yellow', 'cyan', 'purple', 'orange', 'pink'];
+// Yalnızca images-v2 klasöründe karşılığı olan renkler kullanılır
+const COLORS = ['red', 'blue', 'green', 'yellow', 'cyan', 'orange'];
+
+// ── images-v2 görsel haritası ────────────────────────────────
+// static   : vida'da duran profil görüntüsü
+// floating : havada / seçili görüntüsü
+// lift     : vida'dan çıkış animasyonu GIF'i
+// drop     : vida'ya giriş animasyonu GIF'i
+const NUT_IMAGES_V2 = {
+  red:    { static: 'somun-kesik-sabit-kirmizi0.png', floating: 'somun-sabit-kirmizi0.png',   lift: 'somun-cikis-kirmizi.gif',  drop: 'somun-kesik-giris-kirmizi.gif'  },
+  blue:   { static: 'somun-kesik-sabit-mavi.png',     floating: 'somun-tam-sabit-mavi.png',   lift: 'somun-cikis-mavi.gif',     drop: 'somun-giris-kesik-mavi.gif'     },
+  green:  { static: 'somun-kesik-sabit-yesil0.png',   floating: 'somun-sabit-yesil0.png',     lift: 'somun-cikis-yesil.gif',    drop: 'somun-kesik-giris-yesil.gif'    },
+  yellow: { static: 'somun-kesik-sabit-sari0.png',    floating: 'somun-sabit-sari0.png',      lift: 'somun-cikis-sari.gif',     drop: 'somun-kesik-giris-sari.gif'     },
+  cyan:   { static: 'somun-kesik-sabit-turkuaz0.png', floating: 'somun-sabit-turkuaz0.png',   lift: 'somun-cikis-turkuaz.gif',  drop: 'somun-kesik-giris-turkuaz.gif'  },
+  orange: { static: 'somun-sabit-turuncu0.png',       floating: 'somun-sabit-turuncu0.png',   lift: 'somun-cikis-turuncu.gif',  drop: 'somun-kesik-giris-turuncu.gif'  },
+};
 
 const CAPACITY = 5; // her çubukta max somun sayısı
 
@@ -121,6 +136,7 @@ const state = {
   selected:       null, // seçili çubuk indexi veya null
   savedPegs:      [],   // yeniden başlatma için yedek
   lastPlaced:     null, // { peg, nutIdx } – nut-placing animasyonu için
+  lastLifted:     null, // { peg, nutIdx } – lift GIF animasyonu için
   animating:      false,// grup taşıma animasyonu sırasında girdi kilidi
   completedPegs:  new Set(), // puanı verilmiş tamamlanmış vida indexleri
   newlyCompleted: new Set(), // bu hamle yeni tamamlananlar (animasyon için)
@@ -196,7 +212,8 @@ function getConfig(level) {
   // tier: 0=5-9, 1=10-14, 2=15-19, 3=20-24, 4=25-29, 5=30+
   const tier    = Math.min(Math.floor((level - 5) / 5), 5);
   const colors  = Math.min(6 + Math.floor(tier / 2), 8); // 6,6,7,7,8,8
-  const empties = tier % 2 === 0 ? 2 : 1;                // 2,1,2,1,2,1
+  // 10-14 arası gizli somon da başladığından 2 boş vida; 1 boşa 20'den geç
+  const empties = tier <= 1 ? 2 : (tier % 2 === 0 ? 2 : 1); // 2,2,2,1,2,1
   return { colors, empties };
 }
 
@@ -339,6 +356,21 @@ function checkPegCompletions() {
 }
 
 // ── Tıklama İşleyicisi ──────────────────────────────────────
+let liftTimer = null;
+
+function startLiftAnim(pegIdx, nutIdx) {
+  if (liftTimer) clearTimeout(liftTimer);
+  state.lastLifted = { peg: pegIdx, nutIdx };
+  // Turuncu için uygun "tam" PNG olmadığından çıkış GIF'i floating süresince göster
+  const color = state.pegs[pegIdx][nutIdx];
+  if (color === 'orange') return;
+  liftTimer = setTimeout(() => {
+    state.lastLifted = null;
+    liftTimer = null;
+    if (state.selected === pegIdx) render();
+  }, 500);
+}
+
 function handleClick(idx) {
   if (state.animating) return;
   const { selected, pegs } = state;
@@ -346,19 +378,32 @@ function handleClick(idx) {
   if (selected === null) {
     if (pegs[idx].length > 0) {
       state.selected = idx;
+      startLiftAnim(idx, pegs[idx].length - 1);
       SFX.play('pick');
     }
   } else if (selected === idx) {
     state.selected = null;
+    if (liftTimer) { clearTimeout(liftTimer); liftTimer = null; }
+    state.lastLifted = null;
+    state.lastPlaced = { peg: idx, nutIdx: pegs[idx].length - 1 };
     SFX.play('place');
+    setTimeout(() => {
+      if (state.lastPlaced && state.lastPlaced.peg === idx) {
+        state.lastPlaced = null;
+        render();
+      }
+    }, 400);
   } else if (canMove(selected, idx)) {
     const fromIdx   = selected;
     const toIdx     = idx;
     const groupSize = countTopGroup(pegs[fromIdx], fromIdx);
     state.selected  = null;
+    if (liftTimer) { clearTimeout(liftTimer); liftTimer = null; }
+    state.lastLifted = null;
     state.animating = true;
     let moved = 0;
 
+    let dropTimer = null;
     function moveNext() {
       if (moved === 0) saveSnapshot();
       doMove(fromIdx, toIdx);
@@ -366,10 +411,22 @@ function handleClick(idx) {
       if (moved === 0) state.moves++; // tüm grup = 1 hamle
       moved++;
       checkPegCompletions();
+      const pegJustCompleted = state.newlyCompleted.has(toIdx);
       state.lastPlaced = { peg: toIdx, nutIdx: state.pegs[toIdx].length - 1 };
       const won = checkWin();
       render();
-      state.lastPlaced = null;
+      if (pegJustCompleted) {
+        // Önceki dropTimer varsa iptal et – cap animasyonunu kesmesin
+        if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; }
+        state.lastPlaced = null;
+      } else {
+        if (dropTimer) clearTimeout(dropTimer);
+        dropTimer = setTimeout(() => {
+          state.lastPlaced = null;
+          dropTimer = null;
+          render(); // cut static'e geç
+        }, 400);
+      }
       if (won) {
         state.animating = false;
         setTimeout(showWin, 420);
@@ -385,6 +442,7 @@ function handleClick(idx) {
     return;
   } else {
     state.selected = pegs[idx].length > 0 ? idx : null;
+    if (state.selected === idx) startLiftAnim(idx, pegs[idx].length - 1);
   }
 
   render();
@@ -408,11 +466,11 @@ function getPegDimensions() {
   const isLandscapeMobile =
     window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
 
-  if (isLandscapeMobile) return { PEG_H: 195, NUT_H: 27, NUT_EFF: 21, NUTS_BOT:  9, FLOAT_TOP: 10 };
-  if (W <= 380)          return { PEG_H: 250, NUT_H: 31, NUT_EFF: 24, NUTS_BOT: 10, FLOAT_TOP: 12 };
-  if (W <= 600)          return { PEG_H: 280, NUT_H: 36, NUT_EFF: 29, NUTS_BOT: 12, FLOAT_TOP: 15 };
-  if (W <= 1024)         return { PEG_H: 310, NUT_H: 42, NUT_EFF: 24, NUTS_BOT: 14, FLOAT_TOP: 20 };
-  return                        { PEG_H: 380, NUT_H: 54, NUT_EFF: 26, NUTS_BOT: 18, FLOAT_TOP: 25 };
+  if (isLandscapeMobile) return { PEG_H: 195, NUT_H: 38, NUT_EFF: 18, NUTS_BOT: 18, FLOAT_TOP: 10 };
+  if (W <= 380)          return { PEG_H: 250, NUT_H: 46, NUT_EFF: 21, NUTS_BOT: 21, FLOAT_TOP: 12 };
+  if (W <= 600)          return { PEG_H: 280, NUT_H: 56, NUT_EFF: 25, NUTS_BOT: 26, FLOAT_TOP: 15 };
+  if (W <= 1024)         return { PEG_H: 310, NUT_H: 70, NUT_EFF: 31, NUTS_BOT: 30, FLOAT_TOP: 20 };
+  return                        { PEG_H: 380, NUT_H: 90, NUT_EFF: 40, NUTS_BOT: 40, FLOAT_TOP: 25 };
 }
 
 // ── Render ──────────────────────────────────────────────────
@@ -461,10 +519,17 @@ function buildPegEl(peg, idx) {
     const isJustPlaced  = state.lastPlaced !== null
                           && state.lastPlaced.peg === idx
                           && state.lastPlaced.nutIdx === nutIdx;
+    const isJustLifted  = state.lastLifted !== null
+                          && state.lastLifted.peg === idx
+                          && state.lastLifted.nutIdx === nutIdx;
     const isMystery     = state.mysteryNuts[idx] && state.mysteryNuts[idx].has(nutIdx);
     const isJustRevealed = state.justRevealed.has(`${idx},${nutIdx}`);
 
-    nut.className = 'nut ' + (isMystery ? 'nut-mystery' : 'nut-' + color)
+    const v2 = NUT_IMAGES_V2[color];
+
+    nut.className = 'nut'
+      + (v2 ? ' nut-v2' : ' nut-' + color)
+      + (isMystery     ? ' nut-mystery'   : '')
       + (isFloating    ? ' nut-floating'  : '')
       + (isJustPlaced  ? ' nut-placing'   : '')
       + (isJustRevealed ? ' nut-revealed' : '');
@@ -474,7 +539,14 @@ function buildPegEl(peg, idx) {
     }
 
     const img = document.createElement('img');
-    img.src       = isFloating ? 'images/somon.png' : 'images/somon-2.png';
+    if (v2) {
+      if (!isMystery && isJustLifted)      img.src = 'images-v2/' + v2.lift + '?t=' + Date.now();
+      else if (!isMystery && isJustPlaced) img.src = 'images-v2/' + v2.drop + '?t=' + Date.now();
+      else if (!isMystery && isFloating)   img.src = 'images-v2/' + v2.floating;
+      else                                 img.src = 'images-v2/' + v2.static;
+    } else {
+      img.src = isFloating ? 'images/somon.png' : 'images/somon-2.png';
+    }
     img.alt       = isMystery ? '?' : color;
     img.draggable = false;
     nut.appendChild(img);
@@ -489,24 +561,27 @@ function buildPegEl(peg, idx) {
     nutsDiv.appendChild(nut);
   });
 
-  // ── Tıpa: vida tamamen dolduğunda üstünü kapat ──
-  if (isPegComplete(peg) && !pegIsSelected) {
-    const cap = document.createElement('div');
-    // Yeni tamamlandıysa animasyonlu, önceden tamamlandıysa sabit
-    cap.className = state.newlyCompleted.has(idx) ? 'peg-cap' : 'peg-cap peg-cap--settled';
-    const capImg = document.createElement('img');
-    capImg.src = 'images/tıpa.png';
-    capImg.draggable = false;
-    cap.appendChild(capImg);
-    wrapper.appendChild(cap);
-  }
-
   // ── Vida direği ──
   const pole = document.createElement('div');
   pole.className = 'peg-pole';
 
   wrapper.appendChild(nutsDiv);
   wrapper.appendChild(pole);
+
+  // ── Tıpa: vida tamamen dolduğunda üstünü kapat (en üste gelsin) ──
+  if (isPegComplete(peg) && !pegIsSelected) {
+    const isNew = state.newlyCompleted.has(idx);
+    const cap = document.createElement('div');
+    cap.className = isNew ? 'peg-cap' : 'peg-cap peg-cap--settled';
+    const capImg = document.createElement('img');
+    // Yeni tamamlanan: GIF dönerek takılır; settled: static PNG
+    capImg.src = isNew
+      ? 'images-v2/vida-kapak.gif?t=' + Date.now()
+      : 'images-v2/vida-kapak-static.png';
+    capImg.draggable = false;
+    cap.appendChild(capImg);
+    wrapper.appendChild(cap);
+  }
 
   return wrapper;
 }
@@ -517,6 +592,8 @@ document.getElementById('restart-btn').addEventListener('click', () => {
   state.score         = 0;
   state.selected      = null;
   state.lastPlaced    = null;
+  state.lastLifted    = null;
+  if (liftTimer) { clearTimeout(liftTimer); liftTimer = null; }
   resetScoreDisplay();
   state.animating      = false;
   state.completedPegs  = new Set();
@@ -593,8 +670,24 @@ function addCoins(n) {
   saveCityState();
 }
 
-// Bina pozisyonları: üst üste binmeyi önleyecek aralık
-const BLDG_POSITIONS = ['13%', '34%', '50%', '66%', '87%'];
+// Bina pozisyonları: ön sıra (düşük) + arka sıra (yüksek) düzeni
+// bottomFrac: island yüksekliğinin kaçta biri kadar yukarıda (0 = en alt)
+const BLDG_LAYOUT = [
+  { left: '22%', bottomFrac: -0.15, zIndex: 2 },  // ön-sol
+  { left: '31%', bottomFrac:  0.15, zIndex: 1 },  // arka-sol
+  { left: '50%', bottomFrac: -0.15, zIndex: 2 },  // ön-orta
+  { left: '69%', bottomFrac:  0.15, zIndex: 1 },  // arka-sağ
+  { left: '78%', bottomFrac: -0.15, zIndex: 2 },  // ön-sağ
+];
+
+function getIslandHeight() {
+  const isLandscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+  const W = window.innerWidth;
+  if (isLandscape) return 100;
+  if (W <= 600)    return 170;
+  if (W <= 1024)   return 240;
+  return 300;
+}
 
 function renderCityScreen() {
   const city     = CITY_DATA[cityState.activeCity];
@@ -632,11 +725,15 @@ function renderCityScreen() {
     island.appendChild(lockBadge);
   }
 
+  const islandH = getIslandHeight();
   city.buildings.forEach((bldg, i) => {
     const card = document.createElement('div');
     const isUnlocked = !isCityLocked && i < unlocked;
     card.className = 'city-building ' + (isUnlocked ? 'unlocked' : 'locked');
-    card.style.left = BLDG_POSITIONS[i];
+    const layout = BLDG_LAYOUT[i];
+    card.style.left    = layout.left;
+    card.style.bottom  = (islandH * layout.bottomFrac - 25) + 'px';
+    card.style.zIndex  = layout.zIndex;
 
     const img = document.createElement('img');
     img.src = bldg.img;
@@ -784,20 +881,19 @@ document.getElementById('home-btn').addEventListener('click', () => {
 
 // ── Giriş Ekranı ─────────────────────────────────────────────
 function createBgNuts() {
-  const bg     = document.getElementById('intro-bg');
-  const colors = ['red', 'blue', 'green', 'yellow', 'cyan', 'purple'];
+  const bg = document.getElementById('intro-bg');
   for (let i = 0; i < 16; i++) {
     const wrap  = document.createElement('div');
-    const color = colors[i % colors.length];
+    const color = COLORS[i % COLORS.length];
     const size  = 28 + Math.random() * 52;
-    wrap.className            = `bg-nut nut-${color}`;
-    wrap.style.left           = Math.random() * 100 + '%';
-    wrap.style.width          = size + 'px';
-    wrap.style.height         = size + 'px';
+    wrap.className               = 'bg-nut';
+    wrap.style.left              = Math.random() * 100 + '%';
+    wrap.style.width             = size + 'px';
+    wrap.style.height            = size + 'px';
     wrap.style.animationDuration = (7 + Math.random() * 10) + 's';
-    wrap.style.animationDelay    = -(Math.random() * 14) + 's'; // negatif → anında hareket
+    wrap.style.animationDelay    = -(Math.random() * 14) + 's';
     const img = document.createElement('img');
-    img.src = 'images/somon.png';
+    img.src       = 'images-v2/' + NUT_IMAGES_V2[color].floating;
     img.draggable = false;
     wrap.appendChild(img);
     bg.appendChild(wrap);

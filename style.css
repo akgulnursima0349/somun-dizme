@@ -24,7 +24,7 @@ body {
    ============================ */
 .ui-bar {
   width: 100%;
-  max-width: 960px;
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -184,8 +184,8 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 228px;
-  background: url('images/vida.png') bottom center / 228px auto no-repeat;
+  height: 360px;
+  background: url('images-v2/vida0.png') bottom center / 228px auto no-repeat;
   pointer-events: none;
   z-index: 0;
 }
@@ -198,7 +198,7 @@ body {
 */
 .peg-nuts {
   position: absolute;
-  bottom: 18px;
+  bottom: 40px;
   width: 100%;
   display: flex;
   flex-direction: column-reverse;
@@ -241,9 +241,9 @@ body {
   Margin: 0 → bitişik, aralarında boşluk yok.
 */
 .nut {
-  width: 110px;
-  height: 54px;
-  margin: -28px 0 0;
+  width: 235px;
+  height: 90px;
+  margin: -50px 0 0;
   flex-shrink: 0;
   position: relative;
   transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -254,17 +254,18 @@ body {
 }
 
 /* ── Gizli Somon ────────────────────────────────────────────── */
-.nut-mystery {
-  filter: brightness(0.15) !important;
+/* filter img'ye uygulanır → nut şekli korunur, "?" span etkilenmez */
+.nut-mystery img {
+  filter: grayscale(1) brightness(0.15) !important;
 }
-.nut-mystery.nut-floating {
-  filter: brightness(0.25) !important;
+.nut-mystery.nut-floating img {
+  filter: grayscale(1) brightness(0.28) !important;
 }
 .mystery-mark {
   position: absolute;
-  top: 30%;
+  bottom: 22%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   font-size: 24px;
   font-weight: 900;
   color: #e8e8e8;
@@ -294,6 +295,34 @@ body {
   pointer-events: none;
   user-select: none;
   transform-origin: center center;
+}
+
+/* ── V2 görseller: portresit 937×2010 resmi → somun kafasını ortala ── */
+/* Somun canvas'ın alt ~%30'unda (y≈1400-1950). 90% ile tam başından görünür. */
+.nut.nut-v2 img {
+  object-fit: cover;
+  object-position: center 90%;
+}
+
+/* ── V2 Görseller: renk filtresi yok, GIF kendi animasyonunu taşır ── */
+.nut.nut-v2 {
+  filter: none;
+}
+.nut.nut-v2.nut-floating {
+  filter: brightness(1.35);
+}
+/* v2 somonlar GIF animasyonu kullanır – CSS rotateY uygulanmasın */
+.nut.nut-v2.nut-floating img,
+.nut.nut-v2.nut-placing img {
+  animation: none;
+}
+
+/* Mystery reveal – v2 görseller: renk anında ortaya çıkar, eski animasyon yok */
+.nut.nut-v2.nut-revealed {
+  animation: none;
+}
+.nut-v2.nut-revealed img {
+  filter: none;
 }
 
 /* ── Havada (seçili) somun ─────────────────────────────────── */
@@ -339,19 +368,22 @@ body {
 /* ── Tıpa (vida tamamlandığında) ────────────────────────────── */
 .peg-cap {
   position: absolute;
-  bottom: 155px;
+  bottom: 300px;
   left: 50%;
   transform: translateX(-50%);
-  width: 120px;
-  z-index: 6;
+  width: 140px;
+  height: 80px;
+  z-index: 20;
   animation: cap-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
 .peg-cap img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center 12%;
 }
 
 @keyframes cap-pop {
@@ -615,7 +647,7 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 0;
+  padding-bottom: 60px;
   position: relative;
 }
 
@@ -632,11 +664,11 @@ body {
 }
 
 .city-island {
-  width: 860px;
-  max-width: 98vw;
-  height: 210px;
+  width: 700px;
+  max-width: 94vw;
+  height: 300px;
   background: linear-gradient(180deg, #5aad6e 0%, #4a9058 25%, #3a7248 55%, #2c5838 100%);
-  border-radius: 50% 50% 8% 8% / 38% 38% 4% 4%;
+  border-radius: 50%;
   position: relative;
   overflow: visible;
   box-shadow:
@@ -666,8 +698,8 @@ body {
 }
 
 .city-building img {
-  height: 380px;
-  max-width: 180px;
+  height: 460px;
+  max-width: 200px;
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
@@ -812,9 +844,9 @@ body {
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .city-name          { font-size: 22px; letter-spacing: 4px; }
-  .city-island        { height: 160px; border-radius: 50% 50% 8% 8% / 35% 35% 4% 4%; }
-  .city-building img  { height: 185px; max-width: 110px; }
-  .city-building      { bottom: 12px; }
+  .city-island        { width: 300px; height: 170px; border-radius: 50%; }
+  .city-building img  { height: 230px; max-width: 120px; }
+  .city-building      { bottom: -15px; }
   .unlock-btn, .city-play-btn { font-size: 13px; padding: 11px 18px; }
   #city-coins-display { font-size: 20px; }
 }
@@ -854,10 +886,6 @@ body {
 .bg-nut {
   position: absolute;
   bottom: -70px;
-  filter: grayscale(1) sepia(1)
-          saturate(var(--sat, 12))
-          hue-rotate(var(--hue, 0deg))
-          brightness(var(--bright, 1));
   animation: bg-float linear infinite;
   opacity: 0;
 }
@@ -865,7 +893,7 @@ body {
 .bg-nut img {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: contain;
   display: block;
   user-select: none;
 }
@@ -888,10 +916,17 @@ body {
 }
 
 .intro-icon {
-  font-size: 78px;
-  line-height: 1;
+  width: 90px;
+  height: 90px;
   animation: intro-spin 5s linear infinite;
   margin-bottom: 10px;
+}
+
+.intro-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 @keyframes intro-spin {
@@ -928,18 +963,14 @@ body {
 }
 
 .intro-nut {
-  width: 68px;
-  height: 68px;
-  filter: grayscale(1) sepia(1)
-          saturate(var(--sat, 12))
-          hue-rotate(var(--hue, 0deg))
-          brightness(var(--bright, 1));
+  width: 130px;
+  height: 130px;
 }
 
 .intro-nut img {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: contain;
   display: block;
   animation: intro-bob 1.8s ease-in-out infinite;
 }
@@ -996,23 +1027,24 @@ body {
     height: 280px;
   }
   .peg-pole {
-    height: 140px;
+    height: 240px;
     background-size: 140px auto;
   }
   .peg-nuts {
-    bottom: 12px;
+    bottom: 26px;
   }
   .nut {
-    width: 66px;
-    height: 36px;
-    margin: -7px 0 0;
+    width: 154px;
+    height: 56px;
+    margin: -31px 0 0;
   }
   .nut.nut-floating {
     /* transform: JS tarafından hesaplanır */
   }
   .peg-cap {
-    bottom: 96px;
-    width: 72px;
+    bottom: 198px;
+    width: 88px;
+    height: 54px;
   }
   #pegs-container {
     gap: 6px;
@@ -1022,7 +1054,7 @@ body {
   }
   .intro-title  { font-size: 34px; letter-spacing: 3px; margin-bottom: 20px; }
   .intro-icon   { font-size: 56px; }
-  .intro-nut    { width: 46px; height: 46px; }
+  .intro-nut    { width: 80px; height: 80px; }
   .intro-nuts-row { gap: 8px; margin-bottom: 18px; }
   #play-btn     { font-size: 18px; padding: 14px 44px; letter-spacing: 4px; }
   .intro-sub    { font-size: 14px; margin-bottom: 24px; }
@@ -1040,24 +1072,24 @@ body {
 
   /* Peg */
   .peg           { width: 110px; height: 310px; }
-  .peg-pole      { height: 175px; background-size: 175px auto; }
-  .peg-nuts      { bottom: 14px; }
-  .nut           { width: 82px; height: 42px; margin: -18px 0 0; }
-  .peg-cap       { bottom: 116px; width: 90px; }
+  .peg-pole      { height: 290px; background-size: 175px auto; }
+  .peg-nuts      { bottom: 30px; }
+  .nut           { width: 191px; height: 70px; margin: -39px 0 0; }
+  .peg-cap       { bottom: 238px; width: 110px; height: 65px; }
   #pegs-container { gap: 10px; align-content: flex-end; }
   #game-area     { padding: 20px 16px 24px; }
 
   .mystery-mark  { font-size: 20px; }
 
   /* Şehir */
-  .city-island       { height: 175px; }
-  .city-building img { height: 280px; max-width: 145px; }
+  .city-island       { width: 560px; height: 240px; border-radius: 50%; }
+  .city-building img { height: 360px; max-width: 165px; }
   .city-building     { bottom: -20px; }
 
   /* Giriş */
   .intro-title { font-size: 44px; }
   .intro-icon  { font-size: 68px; }
-  .intro-nut   { width: 58px; height: 58px; }
+  .intro-nut   { width: 105px; height: 105px; }
 }
 
 /* ============================
@@ -1065,14 +1097,14 @@ body {
    ============================ */
 @media (max-width: 380px) {
   .peg           { width: 76px; height: 250px; }
-  .peg-pole      { height: 122px; background-size: 122px auto; }
-  .peg-nuts      { bottom: 10px; }
-  .nut           { width: 56px; height: 31px; margin: -7px 0 0; }
-  .peg-cap       { bottom: 84px; width: 60px; }
+  .peg-pole      { height: 205px; background-size: 122px auto; }
+  .peg-nuts      { bottom: 21px; }
+  .nut           { width: 132px; height: 46px; margin: -25px 0 0; }
+  .peg-cap       { bottom: 165px; width: 74px; height: 44px; }
   #pegs-container { gap: 5px; }
   .mystery-mark  { font-size: 15px; }
   .intro-title   { font-size: 26px; letter-spacing: 2px; }
-  .intro-nut     { width: 38px; height: 38px; }
+  .intro-nut     { width: 65px; height: 65px; }
   #play-btn      { font-size: 16px; padding: 13px 38px; }
 }
 
@@ -1093,10 +1125,10 @@ body {
 
   /* Peg */
   .peg           { width: 68px; height: 195px; }
-  .peg-pole      { height: 108px; background-size: 108px auto; }
-  .peg-nuts      { bottom: 9px; }
-  .nut           { width: 50px; height: 27px; margin: -6px 0 0; }
-  .peg-cap       { bottom: 72px; width: 54px; }
+  .peg-pole      { height: 175px; background-size: 108px auto; }
+  .peg-nuts      { bottom: 18px; }
+  .nut           { width: 112px; height: 38px; margin: -20px 0 0; }
+  .peg-cap       { bottom: 143px; width: 64px; height: 38px; }
   #pegs-container { gap: 5px; }
   #game-area     { padding: 8px 12px 10px; }
 
@@ -1108,8 +1140,8 @@ body {
   .city-coins-bar { margin: 2px 0 6px; padding: 4px 14px; }
   #city-coins-display { font-size: 18px; }
   .coin-emoji    { font-size: 16px; }
-  .city-island   { height: 100px; }
-  .city-building img { height: 120px; max-width: 80px; }
+  .city-island   { width: 260px; height: 100px; border-radius: 50%; }
+  .city-building img { height: 140px; max-width: 80px; }
   .city-building { bottom: -10px; }
   .city-footer   { padding: 6px 16px 10px; gap: 7px; }
   .unlock-btn, .city-play-btn { font-size: 12px; padding: 8px 14px; }
@@ -1118,7 +1150,7 @@ body {
   .intro-icon    { font-size: 38px; margin-bottom: 4px; }
   .intro-title   { font-size: 22px; letter-spacing: 2px; margin-bottom: 8px; }
   .intro-nuts-row { gap: 8px; margin-bottom: 10px; }
-  .intro-nut     { width: 32px; height: 32px; }
+  .intro-nut     { width: 55px; height: 55px; }
   .intro-sub     { font-size: 12px; margin-bottom: 12px; }
   #play-btn      { font-size: 14px; padding: 10px 30px; letter-spacing: 3px; }
 }
